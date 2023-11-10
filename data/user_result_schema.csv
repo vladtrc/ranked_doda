@@ -1,0 +1,10 @@
+column_name,type
+player_id,long
+net_worth,long
+kill,long
+death,long
+assist,long
+match_id,long
+is_radiant,bool
+pos,long
+hero_id,long

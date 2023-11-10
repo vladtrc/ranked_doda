@@ -1,0 +1,3 @@
+column_name,type
+user_id,long
+name,string

@@ -1,0 +1,3 @@
+column_name,type
+hero_id,long
+name,string

@@ -1,0 +1,7 @@
+column_name,type
+match_id,long
+duration_sec,long
+radiant_kills,long
+dire_kills,long
+radiant_won,bool
+finished_at,dttm
