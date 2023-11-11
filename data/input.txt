@@ -10,7 +10,7 @@ dextron 3 8620 2/10/9
 starlight 2 11519 2/9/10
 dire:
 poopy 2 16602 10/3/19
-minuspalec 4 12165 0/5/24
+palec 4 12165 0/5/24
 fishscale 1 28020 25/1/8
 kebab 5 11994 5/3/18
 aizlkel 3 13849 2/12/24
@@ -45,7 +45,7 @@ fishscale 1 26127 24/1/10
 itnon 4 9482 4/7/18
 egor 3 13509 2/4/19
 emperor 2 23071 12/5/19
-paladirka 5 10576 4/7/18
+palandirka 5 10576 4/7/18
 
 2023-11-10 0:42
 47:32 49-22 radiant
@@ -67,7 +67,7 @@ aizlkel 3 13931 1/11/9
 37:55 38-40 radiant
 radiant:
 pizza 2 16165 5/8/19
-minuspalec 4 11599 1/11/19
+palec 4 11599 1/11/19
 katokan 1 31834 24/6/9
 fishscale 5 14914 7/5/26
 aizlkel 3 12525 1/10/25
@@ -86,7 +86,7 @@ toyota 4 11001 7/9/19
 radiant:
 pizza 5 20118 7/9/31
 fishscale 3 50484 22/3/18
-minuspalec 4 16703 3/10/22
+palec 4 16703 3/10/22
 aizlkel 1 20917 3/13/9
 katokan 2 31196 17/6/21
 dire:
@@ -100,7 +100,7 @@ dextron 3 17394 4/8/18
 50:28 27-42 radiant
 radiant:
 imba 1 40304 12/3/12
-minuspalec 4 18822 4/10/12
+palec 4 18822 4/10/12
 aizlkel 5 11636 3/18/16
 rubius 3 17352 1/9/19
 katokan 2 23793 7/2/10
@@ -123,7 +123,7 @@ DIRE:
 imba 1 14556 6/4/7
 aizlkel 5 4506 1/12/9
 katokan 2 10239 6/6/3
-minuspalec 4 6152 0/10/10
+palec 4 6152 0/10/10
 RubiuS 3 8429 1/10/4
 
 2023-11-07 2:22
@@ -131,7 +131,7 @@ RubiuS 3 8429 1/10/4
 RADIANT:
 pizza 5 12468 5/11/27
 Yak 3 33103 13/11/31
-Minuspalec 4 21538 9/6/31
+palec 4 21538 9/6/31
 fishscale 1 40862 19/7/17
 Mikitos 2 31643 12/5/16
 DIRE:
@@ -145,8 +145,8 @@ unseash 4 22015 10/14/13
 32:16 38-14 RADIANT
 RADIANT:
 pizza 5 10098 6/6/23
-Minuspalec 4 8495 1/5/13
-ginekolog 3 15151 5/1/18
+palec 4 8495 1/5/13
+ginecolog 3 15151 5/1/18
 sobolew 1 20744 8/2/22
 Starlight 2 24071 18/0/11
 DIRE:
@@ -167,7 +167,7 @@ dextron 5 12494 4/11/9
 DIRE:
 fishscale 1 41019 18/9/17
 imba 3 26787 6/6/24
-Minuspalec 4 12884 5/12/10
+palec 4 12884 5/12/10
 Poopy 2 34281 6/4/27
 kebab 5 20652 12/9/2
 
@@ -207,7 +207,7 @@ kebab 4 11514 4/11/14
 2023-11-08 00:00
 34:57 19-40 dire
 radiant:
-minuspalec 5 8188 2/5/7
+palec 5 8188 2/5/7
 fishscale 1 17657 8/5/3
 koba 2 12117 4/8/8
 kebab 4 6924 3/12/5
@@ -218,3 +218,179 @@ imba 1 25267 5/2/14
 pizza 5 9188 0/5/17
 toyota 3 23471 19/4/11
 poopy 2 18844 8/2/20
+
+
+2023-11-08 22:05
+64:39 51-48 dire
+radiant
+pizza 5 16504 8/9/23
+starlight 3 27977 10/15/28
+kebab 4 19851 5/12/23
+shu_bert 2 36655 17/5/25
+toyota 1 29148 11/8/13
+dire
+poopy 4 32794 6/12/27
+yak 2 36267 13/11/12
+imba 1 44624 20/9/15
+rupich 3 37758 5/9/30
+solence 5 21484 4/10/32
+
+
+
+
+2023-10-06 22:36
+58:28 37-37 dire
+radiant
+pizza 5 17116 2/5/21
+fishscale 1 35637 8/5/12
+mugiwara 2 31369 11/5/17
+otstalii 3 15020 6/11/20
+kebab 4 16138 8/11/19
+dire
+katokan 2 43636 20/4/6
+sobolew 4 22220 1/9/30
+starlight 1 36123 6/6/20
+rupich 5 17377 5/11/21
+p 3 23892 5/7/13
+
+
+2023-10-07 23:50
+49:00 47-49 dire
+radiant
+pizza 5 13969 4/12/18
+runner 4 18536 12/8/17
+fishscale 2 18986 9/10/20
+dimka 1 22935 11/7/15
+cashier 3 24433 11/12/21
+dire
+p 4 16139 3/9/19
+yak 2 23473 10/15/17
+katokan 3 33634 22/4/15
+imba 1 31608 10/8/19
+angry_duck 5 19355 3/11/29
+
+2023-10-07 22:21
+35:51 43-20 radiant
+radiant
+pizza 5 12416 5/5/22
+fishscale 4 11669 9/1/22
+runner 2 16961 13/5/13
+sobolew 1 21562 8/3/10
+starlight 3 18197 8/6/16
+dire
+imba 1 15022 5/6/11
+angry_duck 4 6778 0/12/10
+katokan 2 13819 5/11/12
+tayviscon 5 8727 4/8/13
+p 3 11816 5/6/6
+
+2023-10-07 21:12
+41:06 22-41 dire
+radiant
+pizza 5 8501 7/12/5
+yana 4 11139 0/9/11
+fishscale 1 24691 11/5/5
+sobolew 3 14466 3/8/12
+mugiwara 2 13782 1/7/11
+dire
+runner 3 20046 15/7/19
+katokan 2 19296 8/3/16
+angry_duck 4 16440 3/6/18
+tayviscon 5 14253 5/4/17
+imba 1 27302 10/2/11
+
+
+2023-10-24 0:35
+26:32 28-6 radiant
+radiant
+pizza 5 7755 3/2/11
+katokan 2 12695 2/1/14
+imba 1 21095 5/0/5
+kebab 4 8861 5/2/14
+kot 3 13513 13/1/0
+dire
+dextron 3 8153 1/3/2
+unseash 1 12613 3/4/0
+egor 5 4116 2/7/2
+itnon 4 3564 0/9/3
+starlight 2 7782 0/5/1
+
+2023-10-23 23:45
+46:45 53-19 radiant
+radiant
+egor 2 35930 18/2/17
+fishscale 5 17037 11/5/22
+pizza 4 9839 1/5/20
+unseash 1 40241 17/1/19
+dextron 3 16493 6/6/15
+dire
+katokan 2 16601 5/11/11
+itnon 5 13288 2/9/11
+imba 1 28918 7/4/7
+kebab 4 7931 1/16/8
+kot 3 13355 4/13/9
+
+
+2023-10-23 22:31
+41:57 54-22 radiant
+radiant
+pizza 2 21638 10/5/8
+fishscale 3 17913 8/2/27
+kebab 4 15017 7/5/27
+yak 1 32771 20/6/17
+palec 5 16164 8/4/18
+dire
+itnon 4 49958 1/13/13
+egor 1 22239 10/6/3
+unseash 2 18423 7/9/10
+dextron 3 11817 3/13/11
+kot 5 7771 1/13/15
+
+2023-10-23 21:19
+33:14 40-9 radiant
+radiant
+pizza 2 14221 5/3/10
+fishscale 1 21973 20/0/15
+kebab 4 12160 4/3/22
+palec 5 10532 5/1/16
+dextron 3 15273 5/2/18
+dire
+egor 1 12518 1/7/1
+itnon 5 4803 0/10/3
+ginecolog 2 12492 7/5/0
+drugdilla 3 8365 0/9/6
+bidlo 4 8993 1/9/3
+
+
+2023-10-23 0:20
+44:27 45-29 radiant
+radiant
+pizza 5 14365 6/7/25
+kebab 3 19051 6/7/25
+fishscale 1 31819 23/3/16
+katokan 2 27919 6/5/22
+palec 4 13900 3/7/25
+dire
+kot 2 11293 4/11/14
+egor 1 20717 8/6/8
+itnon 5 7278 2/10/9
+toyota 4 16392 6/7/15
+dextron 3 12214 7/11/8
+
+2023-10-22 23:18
+27:46 16-36 dire
+radiant
+itnon 5 4809 1/10/9
+egor 1 12906 10/5/2
+dextron 3 6631 0/8/4
+toyota 2 10015 2/4/2
+kot 4 5288 3/9/2
+dire
+fishscale 1 19826 19/1/9
+katokan 2 14471 8/1/9
+pizza 5 10043 3/1/22
+kebab 3 9470 2/9/7
+palec 4 9169 4/4/17
+
+
+
