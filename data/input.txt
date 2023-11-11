@@ -1,160 +1,220 @@
-2023-10-30 23:02
-53:40 52-41 radiant
-radiant:
-no_pizza_time 5 20118 7/9/31
-fishscale 3 50484 22/3/18
-minuspalec 4 16703 3/10/22
-aizlkel 1 20917 3/13/9
-katokan 2 31196 17/6/21
-dire:
-тетя_даун 5 11938 2/12/15
-emperor 1 30677 23/11/10
-egor 2 20248 8/12/16
-0baracuda0 4 0 3/9/12
-c++kills 3 0 4/8/18
 
+
+2023-11-11 00:14
+33:58 24-42 dire
+radiant:
+pizza 5 8052 7/7/9
+imba 1 17387 12/4/8
+itnon 4 6408 1/12/10
+dextron 3 8620 2/10/9
+starlight 2 11519 2/9/10
+dire:
+poopy 2 16602 10/3/19
+minuspalec 4 12165 0/5/24
+fishscale 1 28020 25/1/8
+kebab 5 11994 5/3/18
+aizlkel 3 13849 2/12/24
+
+
+2023-11-10 23:18
+46:46 29-31 dire
+radiant:
+dextron 3 15878 3/7/15
+kebab 4 12194 3/4/12
+starlight 1 19571 5/9/13
+itnon 5 9359 1/8/11
+imba 2 23902 14/4/4
+dire:
+egor 4 17498 4/7/14
+fishscale 1 36597 22/1/2
+poopy 2 17861 4/6/14
+pizza 5 12924 1/8/22
+katokan 3 23545 1/7/13
+
+
+2023-11-10 1:38
+32:55 24-46 dire
+radiant:
+pizza 5 8596 5/10/11
+yak 2 11632 8/10/6
+kebab 4 8943 3/9/4
+aizlkel 3 6208 1/13/10
+toyota 1 12755 5/4/9
+dire:
+fishscale 1 26127 24/1/10
+itnon 4 9482 4/7/18
+egor 3 13509 2/4/19
+emperor 2 23071 12/5/19
+paladirka 5 10576 4/7/18
+
+2023-11-10 0:42
+47:32 49-22 radiant
+radiant
+itnon 4 11746 1/5/20
+palandirka 4 13747 4/9/24
+egor 3 25277 8/4/17
+fishscale 1 45383 27/1/10
+emperor 2 21012 9/3/38
+dire:
+toyota 1 16246 12/6/8
+starlight 2 18554 4/13/6
+pizza 5 6633 0/12/7
+kebab 4 10688 5/7/8
+aizlkel 3 13931 1/11/9
 
 
 2023-10-30 21:52
 37:55 38-40 radiant
 radiant:
-no_pizza_time 2 16165 5/8/19
+pizza 2 16165 5/8/19
 minuspalec 4 11599 1/11/19
 katokan 1 31834 24/6/9
 fishscale 5 14914 7/5/26
 aizlkel 3 12525 1/10/25
 dire:
-0baracuda0 5 6320 2/11/20
+itnon 5 6320 2/11/20
 emperor 2 17950 14/3/18
-C++KILLS 12339 3/9/9
-EGOR 20906 14/6/9
-тетя_даун 11001 7/9/19
+dextron 3 12339 3/9/9
+egor 1 20906 14/6/9
+toyota 4 11001 7/9/19
 
 
 
 
-2023-10-31 20:28
+2023-10-30 23:02
+53:40 52-41 radiant
+radiant:
+pizza 5 20118 7/9/31
+fishscale 3 50484 22/3/18
+minuspalec 4 16703 3/10/22
+aizlkel 1 20917 3/13/9
+katokan 2 31196 17/6/21
+dire:
+toyota 5 11938 2/12/15
+emperor 1 30677 23/11/10
+egor 2 20248 8/12/16
+itnon 4 13940 3/9/12
+dextron 3 17394 4/8/18
+
+2023-10-31 23:51
 50:28 27-42 radiant
 radiant:
-fuck_gg 1 40304 12/3/12
+imba 1 40304 12/3/12
 minuspalec 4 18822 4/10/12
 aizlkel 5 11636 3/18/16
-dj_rubius 3 17352 1/9/19
+rubius 3 17352 1/9/19
 katokan 2 23793 7/2/10
 dire:
 fishscale 1 34375 13/2/12
-c++kills 3 20512 10/5/15
-no_pizza_time 5 10363 2/8/18
-лучший_кебаб2023 4 13478 7/7/18
-starl1ght 2 22508 8/5/14
+dextron 3 20512 10/5/15
+pizza 5 10363 2/8/18
+kebab 4 13478 7/7/18
+starlight 2 22508 8/5/14
 
-
-
-
-2023-11-01 0:39
+2023-11-01 00:39
 30:13 41-15 RADIANT
 RADIANT:
-no pizza time 4 7915 5/6/11
-Лучший кебаб 2023 г 5 9773 3/2/20
-41P13D1K 1 21556 22/1/9
-Starlight 2 13438 7/4/16
-C++KILLS 3 12501 2/2/26
+pizza 4 7915 5/6/11
+kebab 5 9773 3/2/20
+fishscale 1 21556 22/1/9
+starlight 2 13438 7/4/16
+dextron 3 12501 2/2/26
 DIRE:
-Fuck GG 1 14556 6/4/7
-AizIKEI 5 4506 1/12/9
-KATOKAN 2 10239 6/6/3
-Minuspalec 4 6152 0/10/10
+imba 1 14556 6/4/7
+aizlkel 5 4506 1/12/9
+katokan 2 10239 6/6/3
+minuspalec 4 6152 0/10/10
 Dj_RubiuS 3 8429 1/10/4
-
-
-
 
 2023-11-07 2:22
 55:39 58-39 DIRE
 RADIANT:
-no pizza time 5 12468 5/11/27
+pizza 5 12468 5/11/27
 Yak 3 33103 13/11/31
 Minuspalec 4 21538 9/6/31
-41P13D1K 1 40862 19/7/17
+fishscale 1 40862 19/7/17
 Mikitos 2 31643 12/5/16
 DIRE:
 Starlight 3 21804 10/11/14
-solence- 1 26909 9/6/11
-C++KILLS 2 15626 4/15/11
-AizIKEI 5 18661 5/12/18
+solence 1 26909 9/6/11
+dextron 2 15626 4/15/11
+AizlKEl 5 18661 5/12/18
 unseash 4 22015 10/14/13
-
-
-
 
 2023-11-07 21:40
 32:16 38-14 RADIANT
 RADIANT:
-no pizza time 5 10098 6/6/23
+pizza 5 10098 6/6/23
 Minuspalec 4 8495 1/5/13
-Гинеколог Володя 3 15151 5/1/18
-SOBOL3W 1 20744 8/2/22
+ginekolog 3 15151 5/1/18
+sobolew 1 20744 8/2/22
 Starlight 2 24071 18/0/11
 DIRE:
-Тетя Даун 1 13089 5/5/5
-C++KILLS 5 7602 2/8/4
-Лучший кебаб 2023 г 4 4725 2/9/3
-Светлана 3 12414 1/8/8
-Mr. Poopy Butthole 2 11219 2/8/3
-
-
-
+toyota 1 13089 5/5/5
+dextron 5 7602 2/8/4
+kebab 4 4725 2/9/3
+svetlana 3 12414 1/8/8
+poopy 2 11219 2/8/3
 
 2023-11-07 23:01
 53:55 39-47 DIRE
 RADIANT:
 Starlight 2 24292 13/8/15
-Тетя Даун 1 21274 7/9/13
-no pizza time 4 13438 1/9/17
-Коба 3 23700 14/10/8
-C++KILLS 5 12494 4/11/9
+toyota 1 21274 7/9/13
+pizza 4 13438 1/9/17
+koba 3 23700 14/10/8
+dextron 5 12494 4/11/9
 DIRE:
-41P13D1K 1 41019 18/9/17
-Fuck GG 3 26787 6/6/24
+fishscale 1 41019 18/9/17
+imba 3 26787 6/6/24
 Minuspalec 4 12884 5/12/10
-Mr. Poopy Butthole 2 34281 6/4/27
-Лучший кебаб 2023 г 5 20652 12/9/2
-
-
-
+Poopy 2 34281 6/4/27
+kebab 5 20652 12/9/2
 
 
 2023-11-08 22:05
 64:39 51-48 DIRE
 RADIANT:
-no pizza time 5 16504 8/23
+pizza 5 16504 8/9/23
 Starlight 3 27977 10/15/28
-Лучший кебаб 2023 г 4 19851 5/12/23
+kebab 4 19851 5/12/23
 Shu_bert 2 36655 17/5/25
-Тетя Даун 1 29148 11/8/13
+toyota 1 29148 11/8/13
 DIRE:
-Mr. Poopy Butthole 4 32794 6/12/27
+poopy 4 32794 6/12/27
 Yak 2 36267 13/11/12
-Fuck GG 1 44624 20/9/15
-RUпы4 3 37759 5/9/30
-solence- 5 21484 4/10/32
-
-
-
+imba 1 44624 20/9/15
+rupich 3 37759 5/9/30
+solence 5 21484 4/10/32
 
 
 2023-11-08 23:15
 42:59 42-27 RADIANT
 RADIANT:
-Mr. Poopy Butthole 4 14433 2/7/23
-41P13D1K 1 26465 7/1/17
+Poopy 4 14433 2/7/23
+fishscale 1 26465 7/1/17
 Shu_bert 2 27202 16/4/16
 Starlight 3 20951 12/7/19
-RUпы4 5 12959 4/8/25
+rupich 5 12959 4/8/25
 DIRE:
 Yak 2 19076 10/7/9
-no pizza time 5 7931 3/12/8
-Fuck GG 1 24430 5/7/8
-Тетя Даун 3 17693 5/5/13
-Лучший кебаб 2023 г 4 11514 4/11/14
+pizza 5 7931 3/12/8
+imba 1 24430 5/7/8
+toyota 3 17693 5/5/13
+kebab 4 11514 4/11/14
 
+
+2023-11-08 00:00
+34:57 19-40 dire
+radiant:
+minuspalec 5 8188 2/5/7
+fishscale 1 17657 8/5/3
+koba 2 12117 4/8/8
+kebab 4 6924 3/12/5
+dextron 3 7127 0/10/9
+dire:
+aizlkel 4 13240 8/6/25
+imba 1 25267 5/2/14
+pizza 5 9188 0/5/17
+toyota 3 23471 19/4/11
+poopy 2 18844 8/2/20

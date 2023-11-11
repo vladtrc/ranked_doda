@@ -1,8 +1,10 @@
 import datetime
 import logging
 from dataclasses import dataclass
-from time import strptime
 from typing import Iterator, Optional
+
+from repository.in_memory_repository import table_schemas
+from spark_common import spark
 
 
 @dataclass
@@ -46,7 +48,7 @@ def parse_player(player_line: str) -> ParsedPlayer:
     kills, deaths, assists = s[-1].split('/')
     networth = s[-2]
     pos = s[-3]
-    name = ' '.join(s[0: (-3)])
+    name = ' '.join(s[0: (-3)]).lower()
     return ParsedPlayer(
         name=name,
         pos=int(pos),
@@ -86,3 +88,61 @@ def unsafe_parse_14(ft: list[str]) -> ParsedMatch:
         radiant_players=radiant_players,
         dire_players=dire_players,
     )
+
+
+def parse_file_to_matches(lines: list[str]) -> list[ParsedMatch]:
+    split_lines = split_by_14(lines)
+    parsed_matches = map(parse_14, split_lines)
+    return [m for m in parsed_matches if m]
+
+
+def parse_file(lines: list[str]):
+    parsed_matches = parse_file_to_matches(lines)
+
+    matches = []
+    users = []
+    user_results = []
+
+    users_map = {}
+    heroes_map = {}
+
+    for match_id, match in enumerate(parsed_matches, 1):
+        matches += [
+            {
+                'duration_sec': match.duration_sec,
+                'radiant_kills': int(match.score_radiant),
+                'dire_kills': int(match.score_dire),
+                'radiant_won': match.radiant_won,
+                'finished_at': match.finished_at,
+                'match_id': match_id,
+            }
+        ]
+        for player in match.dire_players + match.radiant_players:
+            player_id = users_map.get(player.name, len(users_map) + 1)
+            users_map[player.name] = player_id
+            user_results += [
+                {
+                    'player_id': player_id,
+                    'match_id': match_id,
+                    'net_worth': player.net_worth,
+                    'kill': player.kills,
+                    'death': player.deaths,
+                    'assist': player.assists,
+                    'is_radiant': player in match.radiant_players,
+                    'pos': player.pos,
+                    'name': player.name,
+                }
+            ]
+
+    users = [{'name': k, 'user_id': v} for k, v in users_map.items()]
+
+    print(matches)
+    print(users)
+
+    user_schema = table_schemas['user']
+    user_result_schema = table_schemas['user_result']
+    match_schema = table_schemas['match']
+
+    spark.createDataFrame(users, user_schema).createOrReplaceTempView("user")
+    spark.createDataFrame(matches, match_schema).createOrReplaceTempView("match")
+    spark.createDataFrame(user_results, user_result_schema).createOrReplaceTempView("user_result")
