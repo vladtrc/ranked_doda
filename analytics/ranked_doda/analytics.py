@@ -57,8 +57,64 @@ from player_impact
 order by player_impact.match_id
 """)
 
+view("player_rating", """
+select 
+     match.match_id as match_id,
+     is_radiant,
+     pos,
+     player_id,
+     (case when 1 = row_number() over (partition by player_id order by finished_at) then 1000 end) as rating
+from user_result
+join match on user_result.match_id = match.match_id
+order by finished_at asc
+""")
 
-spark.sql("select * from player_impact").show(100)
+view("pr_skew", """
+select 
+     *,
+     -- radiant_kills/coalesce(NULLIF(dire_kills,0), 1) as radiant_nw,
+     radiant_kills/coalesce(NULLIF(dire_kills,0), 1) as radiant_kd,
+     pow(radiant_kd, (1.5*60*60) / duration_sec) as pr_skew
+from match
+""")
+
+view("team_rating_contribution", """
+select 
+     match_id, 
+     is_radiant,
+     sum(rating*(6-pos)) as team_rating_contribution
+from player_rating
+group by match_id, is_radiant
+""")
+
+view("th_skew", """
+select 
+     match_id,
+     sum(team_rating_contribution *  (1 - cast(is_radiant as int))) as   dire_rating_contribution,
+     sum(team_rating_contribution *       cast(is_radiant as int)) as radiant_rating_contribution,
+     radiant_rating_contribution/dire_rating_contribution as th_skew
+from 
+     team_rating_contribution
+group by match_id
+""")
+
+view("abs", """
+select 
+*,
+0.5 * ((th_skew.th_skew + pr_skew.pr_skew) + abs(th_skew.th_skew - pr_skew.pr_skew)) as max_skew,
+0.5 * ((th_skew.th_skew + pr_skew.pr_skew) - abs(th_skew.th_skew - pr_skew.pr_skew)) as min_skew,
+max_skew / min_skew as disbalance
+from player_rating
+     join team_rating_contribution
+          on team_rating_contribution.match_id = player_rating.match_id 
+          and team_rating_contribution.is_radiant = player_rating.is_radiant
+    join match on player_rating.match_id = match.match_id 
+    join th_skew on th_skew.match_id = match.match_id
+    join pr_skew on pr_skew.match_id = match.match_id
+order by match.finished_at, player_rating.is_radiant
+""")
+
+spark.sql("select * from abs").show(100)
 
 exit(0)
 print('Всего игр: ' + str(spark.sql("select * from match").count()))
