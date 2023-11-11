@@ -136,8 +136,8 @@ def parse_file(lines: list[str]):
 
     users = [{'name': k, 'user_id': v} for k, v in users_map.items()]
 
-    print(matches)
-    print(users)
+    # print(matches)
+    # print(users)
 
     user_schema = table_schemas['user']
     user_result_schema = table_schemas['user_result']
