@@ -1,4 +1,6 @@
+import itertools
 from collections import defaultdict
+from pprint import pprint
 
 from pyspark import Row
 from pyspark.sql.types import StructField, FloatType, StructType
@@ -88,12 +90,20 @@ from user_result
 order by finished_at asc
 """)
 
+player_id_by_username = {}
+player_username_by_id = {}
 player_ratings = defaultdict(lambda: 500)
 player_ratings_by_match = defaultdict(dict)
 
 
+def player_impact(rating, pos):
+    return rating * (-0.25 * (pos - 1) + 2)
+
+
 def th_calculator(r):
-    player_rating_by_id = lambda row: player_ratings[row.player_id] * (-0.25 * (row.pos - 1) + 2)
+    player_id_by_username[r.username] = r.player_id
+    player_username_by_id[r.player_id] = r.username
+    player_rating_by_id = lambda row: player_impact(player_ratings[row.player_id], row.pos)
     if r.match_id in player_ratings_by_match:
         radiant_sum = player_ratings_by_match[r.match_id]['radiant_sum']
         dire_sum = player_ratings_by_match[r.match_id]['dire_sum']
@@ -261,6 +271,43 @@ order by rating.player_rating desc
 
 spark.sql("select * from res").show(100)
 
+
+def calc_fair_game(usernames: list[str]) -> dict[list[str]]:
+    results = {}
+    if len(usernames) != 10:
+        raise RuntimeError('need 10 players')
+    players = set(player_id_by_username.get(name) or -1 for name in usernames)
+    for combination in itertools.combinations(players, 5):
+        team_1 = set(combination)
+        team_2 = players - team_1
+        team_1_sum = sum(
+            [player_impact(rating, pos) for pos, rating in enumerate(sorted(player_ratings[p] for p in team_1), 1)])
+        team_2_sum = sum(
+            [player_impact(rating, pos) for pos, rating in enumerate(sorted(player_ratings[p] for p in team_2), 1)])
+        how_imperfect = abs(1 - team_1_sum / team_2_sum)
+        results[how_imperfect] = {
+            'team 1': [player_username_by_id[p] for p in team_1],
+            'team 2': [player_username_by_id[p] for p in team_2],
+        }
+    for i in range(50):
+        min_key = min(results)
+        min_value = results.pop(min_key)
+        print(min_key)
+        pprint(min_value)
+
+
+fair_game = calc_fair_game([
+    'fishscale',
+    'toyota',
+    'egor',
+    'kebab',
+    'pizza',
+    'dextron',
+    'itnon',
+    'imba',
+    'yak',
+    'palec',
+])
 # spark.sql("select * from user_result").repartition(1).write.csv('user_result.csv')
 # spark.sql("select * from user").repartition(1).write.csv('user.csv')
 # spark.sql("select * from match").repartition(1).write.csv('match.csv')
