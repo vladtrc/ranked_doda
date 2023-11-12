@@ -240,14 +240,14 @@ view("res_deaths", "select player_id, cast(avg(death) as int) as avg_death from 
 view("res", """
 select 
     row_number() over (partition by 1 order by rating.player_rating desc) AS N,
+    rating.player_rating as rating,
     -- user.user_id,
     user.name,
     main_pos.pos,
     concat(avg_net_worth, 'k') as avg_gold,
     concat(avg_kills, '/', avg_death, '/', avg_assists) as avg_kda,
     concat(winrate.winrate, '%') as winrate,
-    winrate.total_matches as matches,
-    rating.player_rating
+    winrate.total_matches as matches
 from user 
     join res_net_worth on res_net_worth.player_id = user.user_id
     join res_kills on res_kills.player_id = user.user_id
