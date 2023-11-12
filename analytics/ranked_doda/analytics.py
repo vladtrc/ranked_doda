@@ -1,3 +1,8 @@
+from collections import defaultdict
+
+from pyspark import Row
+from pyspark.sql.types import StructField, FloatType, StructType
+
 from parser import parse_file
 from spark_common import spark, view
 
@@ -31,7 +36,7 @@ select
     team_net_worth.is_radiant as is_radiant, 
     team_net_worth.match_id as match_id, 
     player_impact.net_worth/team_net_worth.team_net_worth as net_worth_percentage,
-    net_worth_percentage * (kill*2 + assist + pos) / coalesce(NULLIF(power(death, 2),0), 1) as impact
+    net_worth_percentage * (kill + assist + pos) / coalesce(NULLIF(power(death, 0.5),0), 1) as impact
 from player_impact 
      join team_net_worth on team_net_worth.match_id = player_impact.match_id and team_net_worth.is_radiant = player_impact.is_radiant
      join match on team_net_worth.match_id = match.match_id
@@ -48,25 +53,14 @@ group by match_id, is_radiant
 
 view("player_impact", """
 select 
-     *, 
+    player_impact.player_id as player_id, 
+    player_impact.match_id, 
     cast(player_impact.is_radiant = match.radiant_won as int) as is_winner,
     player_impact.impact/team_impact.team_impact as impact_percentage
 from player_impact 
      join team_impact on team_impact.match_id = player_impact.match_id and team_impact.is_radiant = player_impact.is_radiant
      join match on player_impact.match_id = match.match_id
 order by player_impact.match_id
-""")
-
-view("player_rating", """
-select 
-     match.match_id as match_id,
-     is_radiant,
-     pos,
-     player_id,
-     (case when 1 = row_number() over (partition by player_id order by finished_at) then 1000 end) as rating
-from user_result
-join match on user_result.match_id = match.match_id
-order by finished_at asc
 """)
 
 view("pr_skew", """
@@ -78,45 +72,64 @@ select
 from match
 """)
 
-view("team_rating_contribution", """
-select 
-     match_id, 
-     is_radiant,
-     sum(rating*(6-pos)) as team_rating_contribution
-from player_rating
-group by match_id, is_radiant
-""")
-
 view("th_skew", """
 select 
-     match_id,
-     sum(team_rating_contribution *  (1 - cast(is_radiant as int))) as   dire_rating_contribution,
-     sum(team_rating_contribution *       cast(is_radiant as int)) as radiant_rating_contribution,
-     radiant_rating_contribution/dire_rating_contribution as th_skew
-from 
-     team_rating_contribution
-group by match_id
+    match.finished_at,
+    player_impact.impact_percentage,
+     cast(user_result.is_radiant = match.radiant_won as int) as is_winner, 
+     pr_skew.pr_skew,
+     user_result.player_id,
+     user_result.is_radiant,
+     match.match_id,
+     array_agg((user_result.player_id, pos)) over (partition by match.match_id, is_radiant) as teammates,
+     array_agg((user_result.player_id, pos)) over (partition by match.match_id) as match_players,
+     array_except(match_players, teammates) as enemys
+from user_result
+     join match on user_result.match_id = match.match_id
+     join pr_skew on pr_skew.match_id = user_result.match_id
+     join player_impact on player_impact.player_id = user_result.player_id and player_impact.match_id = user_result.match_id
 """)
 
-view("abs", """
+player_ratings = defaultdict(lambda: 1000)
+
+
+def th_calculator(r):
+    player_rating_by_id = lambda row: player_ratings[row.player_id] * (6 - row.pos)
+    mates_sum = sum(map(player_rating_by_id, r.teammates))
+    enemys_sum = sum(map(player_rating_by_id, r.enemys))
+    th_skew = mates_sum / enemys_sum if r.is_radiant else enemys_sum / mates_sum
+    disbalance = max(th_skew, r.pr_skew) / min(th_skew, r.pr_skew)
+    delta = 50 * disbalance * (r.is_winner + r.impact_percentage - 1)
+    rating = player_ratings[r.player_id] + delta
+    player_ratings[r.player_id] = rating
+    temp_r = r.asDict()
+    temp_r['player_rating'] = rating
+    return Row(**temp_r)
+
+
+th_skew_df = spark.sql("select * from th_skew")
+th_skew_list = th_skew_df.collect()
+schema = StructType(th_skew_df.schema.fields + [StructField("player_rating", FloatType(), True)])
+spark.createDataFrame(map(th_calculator, th_skew_list), schema=schema).createOrReplaceTempView("rating_history")
+
+view("rating", """
 select 
-*,
-0.5 * ((th_skew.th_skew + pr_skew.pr_skew) + abs(th_skew.th_skew - pr_skew.pr_skew)) as max_skew,
-0.5 * ((th_skew.th_skew + pr_skew.pr_skew) - abs(th_skew.th_skew - pr_skew.pr_skew)) as min_skew,
-max_skew / min_skew as disbalance
-from player_rating
-     join team_rating_contribution
-          on team_rating_contribution.match_id = player_rating.match_id 
-          and team_rating_contribution.is_radiant = player_rating.is_radiant
-    join match on player_rating.match_id = match.match_id 
-    join th_skew on th_skew.match_id = match.match_id
-    join pr_skew on pr_skew.match_id = match.match_id
-order by match.finished_at, player_rating.is_radiant
+player_id,
+max(finished_at) as max_finished_at
+from rating_history
+group by player_id
+""")
+view("rating", """
+select
+    cast(rating_history.player_rating as int),
+    rating.player_id
+from rating
+    left join rating_history on rating.max_finished_at = rating_history.finished_at
+where finished_at = max_finished_at and rating.player_id = rating_history.player_id
 """)
 
-spark.sql("select * from abs").show(100)
-
-exit(0)
+# spark.sql("select * from rating").show(100)
+# exit(0)
 print('Всего игр: ' + str(spark.sql("select * from match").count()))
 
 print('Топ игроков по статам:')
@@ -188,7 +201,8 @@ select
     concat(avg_net_worth, 'k') as avg_gold,
     concat(avg_kills, '/', avg_death, '/', avg_assists) as avg_kda,
     concat(winrate.winrate, '%') as winrate,
-    winrate.total_matches as matches
+    winrate.total_matches as matches,
+    rating.player_rating
 from user 
     join res_net_worth on res_net_worth.player_id = user.user_id
     join res_kills on res_kills.player_id = user.user_id
@@ -196,10 +210,11 @@ from user
     join res_deaths on res_deaths.player_id = user.user_id
     join winrate on winrate.player_id = user.user_id
     join main_pos on main_pos.player_id = user.user_id
-order by winrate.winrate desc
+    join rating on user.user_id = rating.player_id
+order by rating.player_rating desc
 """)
 
-# spark.sql("select * from res").show(100)
+spark.sql("select * from res").show(100)
 
 # spark.sql("select * from user_result").repartition(1).write.csv('user_result.csv')
 # spark.sql("select * from user").repartition(1).write.csv('user.csv')
