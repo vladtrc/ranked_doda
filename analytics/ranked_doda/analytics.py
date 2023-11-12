@@ -36,19 +36,11 @@ select
     team_net_worth.is_radiant as is_radiant, 
     team_net_worth.match_id as match_id, 
     player_impact.net_worth/team_net_worth.team_net_worth as net_worth_percentage,
-    net_worth_percentage * (kill + assist + pos) / coalesce(NULLIF(power(death, 0.5),0), 1) as impact
+    (kill + assist/2 + pos) / coalesce(NULLIF(power(death, 0.2),0), 1) as impact,
+     power(death, 1.2) / (coalesce(NULLIF((kill + assist/2 + pos),0), 1) * net_worth_percentage) as negative_impact
 from player_impact 
      join team_net_worth on team_net_worth.match_id = player_impact.match_id and team_net_worth.is_radiant = player_impact.is_radiant
      join match on team_net_worth.match_id = match.match_id
-""")
-
-view("team_impact", """
-select 
-     player_impact.match_id, 
-     is_radiant, 
-     sum(impact) as team_impact 
-from player_impact
-group by match_id, is_radiant
 """)
 
 view("player_impact", """
@@ -56,9 +48,11 @@ select
     player_impact.player_id as player_id, 
     player_impact.match_id, 
     cast(player_impact.is_radiant = match.radiant_won as int) as is_winner,
-    player_impact.impact/team_impact.team_impact as impact_percentage
+    sum(impact) over (partition by match.match_id, is_radiant order by finished_at) as team_impact,
+    player_impact.impact/team_impact as impact_percentage,
+    sum(negative_impact) over (partition by match.match_id, is_radiant order by finished_at) as team_negative_impact,
+    player_impact.negative_impact/team_negative_impact as negative_impact_percentage
 from player_impact 
-     join team_impact on team_impact.match_id = player_impact.match_id and team_impact.is_radiant = player_impact.is_radiant
      join match on player_impact.match_id = match.match_id
 order by player_impact.match_id
 """)
@@ -74,7 +68,9 @@ from match
 
 view("th_skew", """
 select 
+    user.name as username,
     match.finished_at,
+    player_impact.negative_impact_percentage,
     player_impact.impact_percentage,
      cast(user_result.is_radiant = match.radiant_won as int) as is_winner, 
      pr_skew.pr_skew,
@@ -85,32 +81,78 @@ select
      array_agg((user_result.player_id, pos)) over (partition by match.match_id) as match_players,
      array_except(match_players, teammates) as enemys
 from user_result
+     join user on user_result.player_id = user.user_id
      join match on user_result.match_id = match.match_id
      join pr_skew on pr_skew.match_id = user_result.match_id
      join player_impact on player_impact.player_id = user_result.player_id and player_impact.match_id = user_result.match_id
+order by finished_at asc
 """)
 
-player_ratings = defaultdict(lambda: 1000)
+player_ratings = defaultdict(lambda: 500)
+player_ratings_by_match = defaultdict(dict)
 
 
 def th_calculator(r):
-    player_rating_by_id = lambda row: player_ratings[row.player_id] * (6 - row.pos)
-    mates_sum = sum(map(player_rating_by_id, r.teammates))
-    enemys_sum = sum(map(player_rating_by_id, r.enemys))
-    th_skew = mates_sum / enemys_sum if r.is_radiant else enemys_sum / mates_sum
-    disbalance = max(th_skew, r.pr_skew) / min(th_skew, r.pr_skew)
-    delta = 50 * disbalance * (r.is_winner + r.impact_percentage - 1)
+    player_rating_by_id = lambda row: player_ratings[row.player_id] * (-0.25 * (row.pos - 1) + 2)
+    if r.match_id in player_ratings_by_match:
+        radiant_sum = player_ratings_by_match[r.match_id]['radiant_sum']
+        dire_sum = player_ratings_by_match[r.match_id]['dire_sum']
+    else:
+        radiant_team, dire_team = r.teammates, r.enemys
+        if not r.is_radiant:
+            radiant_team, dire_team = dire_team, radiant_team
+        radiant_sum = sum(map(player_rating_by_id, radiant_team))
+        dire_sum = sum(map(player_rating_by_id, dire_team))
+        player_ratings_by_match[r.match_id]['radiant_sum'] = radiant_sum
+        player_ratings_by_match[r.match_id]['dire_sum'] = dire_sum
+    th_skew = radiant_sum / dire_sum
+    disbalance = (max(th_skew, r.pr_skew) / min(th_skew, r.pr_skew)) ** 0.3
+    percentage = r.impact_percentage if r.is_winner else r.negative_impact_percentage
+    pool = 50 * disbalance
+    sign = 1 if r.is_winner else -1
+    delta = pool * sign * percentage
     rating = player_ratings[r.player_id] + delta
     player_ratings[r.player_id] = rating
     temp_r = r.asDict()
     temp_r['player_rating'] = rating
+    temp_r['player_rating_delta'] = delta
+    temp_r['th_skew'] = th_skew
+    temp_r['pool'] = pool
     return Row(**temp_r)
 
 
 th_skew_df = spark.sql("select * from th_skew")
 th_skew_list = th_skew_df.collect()
-schema = StructType(th_skew_df.schema.fields + [StructField("player_rating", FloatType(), True)])
+schema = StructType(th_skew_df.schema.fields + [
+    StructField("player_rating", FloatType(), True),
+    StructField("player_rating_delta", FloatType(), True),
+    StructField("th_skew", FloatType(), True),
+    StructField("pool", FloatType(), True),
+])
 spark.createDataFrame(map(th_calculator, th_skew_list), schema=schema).createOrReplaceTempView("rating_history")
+
+view("rating_history_human_readable", """
+select 
+    finished_at as match,
+    case when user_result.is_radiant then 'RAD' else 'DIR' end as team,
+    concat(cast(th_skew * 50 as int), '%') as th_skew,
+    concat(cast(pr_skew * 50 as int), '%') as pr_skew,
+    cast(pool as int) as pool,
+    case when is_winner=1 then 'W' else 'L' end as r,
+    username,
+    pos,
+    net_worth,
+    concat(kill, '/', death, '/', assist) as kda,
+    concat(cast(negative_impact_percentage * 100 as int), '%') as ruined,
+    concat(cast(impact_percentage * 100 as int), '%') as carried,
+    concat(cast(player_rating - player_rating_delta as int),' -> ' , cast(player_rating as int)) as mmr,
+    concat(case when player_rating_delta > 0 then '+' else '' end, cast(player_rating_delta as int)) as delta
+from rating_history
+    join user_result on user_result.player_id = rating_history.player_id and rating_history.match_id = user_result.match_id
+order by finished_at desc, is_winner
+""")
+
+spark.sql("select * from rating_history_human_readable").show(100000)
 
 view("rating", """
 select 
@@ -121,14 +163,15 @@ group by player_id
 """)
 view("rating", """
 select
-    cast(rating_history.player_rating as int),
+    max(cast(rating_history.player_rating as int)) as player_rating,
     rating.player_id
 from rating
-    left join rating_history on rating.max_finished_at = rating_history.finished_at
+    left join rating_history on rating.max_finished_at = rating_history.finished_at and rating.player_id = rating_history.player_id
 where finished_at = max_finished_at and rating.player_id = rating_history.player_id
+group by rating.player_id
 """)
-
 # spark.sql("select * from rating").show(100)
+
 # exit(0)
 print('Всего игр: ' + str(spark.sql("select * from match").count()))
 
@@ -196,6 +239,8 @@ view("res_deaths", "select player_id, cast(avg(death) as int) as avg_death from 
 
 view("res", """
 select 
+    row_number() over (partition by 1 order by rating.player_rating desc) AS N,
+    -- user.user_id,
     user.name,
     main_pos.pos,
     concat(avg_net_worth, 'k') as avg_gold,
