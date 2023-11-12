@@ -289,24 +289,31 @@ def calc_fair_game(usernames: list[str]) -> dict[list[str]]:
             'team 1': [player_username_by_id[p] for p in team_1],
             'team 2': [player_username_by_id[p] for p in team_2],
         }
-    for i in range(50):
+    print('MOST FAIR:')
+    for i in range(5):
         min_key = min(results)
+        min_value = results.pop(min_key)
+        print(min_key)
+        pprint(min_value)
+    print('MOST UNFAIR:')
+    for i in range(5):
+        min_key = max(results)
         min_value = results.pop(min_key)
         print(min_key)
         pprint(min_value)
 
 
 fair_game = calc_fair_game([
-    'fishscale',
-    'toyota',
-    'egor',
-    'kebab',
     'pizza',
+    'fishscale',
+    'katokan',
+    'poopy',
     'dextron',
-    'itnon',
+    'starlight',
     'imba',
-    'yak',
     'palec',
+    '',
+    '',
 ])
 # spark.sql("select * from user_result").repartition(1).write.csv('user_result.csv')
 # spark.sql("select * from user").repartition(1).write.csv('user.csv')
