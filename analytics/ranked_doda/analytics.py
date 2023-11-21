@@ -116,9 +116,9 @@ def th_calculator(r):
         player_ratings_by_match[r.match_id]['radiant_sum'] = radiant_sum
         player_ratings_by_match[r.match_id]['dire_sum'] = dire_sum
     th_skew = radiant_sum / dire_sum
-    disbalance = (max(th_skew, r.pr_skew) / min(th_skew, r.pr_skew)) ** 0.3
+    disbalance = (max(th_skew, r.pr_skew) / min(th_skew, r.pr_skew)) ** 0.2
     percentage = r.impact_percentage if r.is_winner else r.negative_impact_percentage
-    pool = 50 * disbalance
+    pool = min(50 * disbalance, 100.0)
     sign = 1 if r.is_winner else -1
     delta = pool * sign * percentage
     rating = player_ratings[r.player_id] + delta
@@ -254,10 +254,9 @@ select
     -- user.user_id,
     user.name,
     main_pos.pos,
-    concat(avg_net_worth, 'k') as avg_gold,
-    concat(avg_kills, '/', avg_death, '/', avg_assists) as avg_kda,
-    concat(winrate.winrate, '%') as winrate,
-    winrate.total_matches as matches
+    concat(avg_net_worth, 'k') as gold,
+    concat(avg_kills, '/', avg_death, '/', avg_assists) as kda,
+    concat(winrate.winrate, '%/', winrate.total_matches) as wins
 from user 
     join res_net_worth on res_net_worth.player_id = user.user_id
     join res_kills on res_kills.player_id = user.user_id
@@ -272,7 +271,10 @@ order by rating.player_rating desc
 spark.sql("select * from res").show(100)
 
 
-def calc_fair_game(usernames: list[str]) -> dict[list[str]]:
+def calc_fair_game(usernames: list[str], premade_teams: list[str]) -> dict[list[str]]:
+    for user in usernames:
+        if user not in player_id_by_username:
+            print(f'unknown user {user}')
     results = {}
     if len(usernames) != 10:
         raise RuntimeError('need 10 players')
@@ -280,41 +282,58 @@ def calc_fair_game(usernames: list[str]) -> dict[list[str]]:
     for combination in itertools.combinations(players, 5):
         team_1 = set(combination)
         team_2 = players - team_1
+        allowed = True
+        for team in premade_teams:
+            player_team = lambda p: 1 if player_id_by_username[p] in team_1 else 2
+            player_teams = {p:player_team(p) for p in team}
+            if len(set(player_teams.values())) != 1:
+                allowed = False
+        if not allowed:
+            continue
         team_1_sum = sum(
-            [player_impact(rating, pos) for pos, rating in enumerate(sorted(player_ratings[p] for p in team_1), 1)])
+            [player_impact(rating, pos) for pos, rating in enumerate(sorted([player_ratings[p] for p in team_1], reverse=True), 1)])
         team_2_sum = sum(
-            [player_impact(rating, pos) for pos, rating in enumerate(sorted(player_ratings[p] for p in team_2), 1)])
-        how_imperfect = abs(1 - team_1_sum / team_2_sum)
+            [player_impact(rating, pos) for pos, rating in enumerate(sorted([player_ratings[p] for p in team_2], reverse=True), 1)])
+        how_imperfect = abs(team_1_sum - team_2_sum)
         results[how_imperfect] = {
-            'team 1': [player_username_by_id[p] for p in team_1],
-            'team 2': [player_username_by_id[p] for p in team_2],
+            'RADIANT': [player_username_by_id[p] for p in team_1],
+            'DIRE': [player_username_by_id[p] for p in team_2],
         }
     print('MOST FAIR:')
-    for i in range(5):
+    def print_result(result):
+        pprint({t:sorted([(int(player_ratings[player_id_by_username[p]]), p) for p in players], reverse=True) for t,players in result.items()})
+    for i in range(3):
         min_key = min(results)
         min_value = results.pop(min_key)
         print(min_key)
-        pprint(min_value)
+        print_result(min_value)
     print('MOST UNFAIR:')
-    for i in range(5):
+    for i in range(3):
         min_key = max(results)
         min_value = results.pop(min_key)
         print(min_key)
-        pprint(min_value)
+        print_result(min_value)
 
+premade_teams = [
+   ['toyota', 'doyota' ,'svetlana'],
+   
+   ['imba', 'katokan', 'poopy']
+]
+
+# premade_teams = []
 
 fair_game = calc_fair_game([
-    'pizza',
-    'fishscale',
-    'katokan',
-    'poopy',
-    'dextron',
-    'starlight',
-    'imba',
     'palec',
-    '',
-    '',
-])
+    'katokan',
+    'solence',
+    'kebab',
+    'pizza',
+    'imba',
+    'poopy',
+    'toyota',
+    'doyota',
+    'svetlana',
+], premade_teams)
 # spark.sql("select * from user_result").repartition(1).write.csv('user_result.csv')
 # spark.sql("select * from user").repartition(1).write.csv('user.csv')
 # spark.sql("select * from match").repartition(1).write.csv('match.csv')
