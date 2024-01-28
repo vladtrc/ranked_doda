@@ -568,4 +568,18 @@ svetlana 3 25206 6/4/19
 kebab 5 15069 5/9/25
 palec 4 15370 5/7/29
 
-as
+2024-01-28 19:00
+26:20 29-9 radiant
+radiant
+katokan 5 6500 1/1/12
+imba 2 14800 6/3/5
+cosmo 4 10000 10/2/12
+cashier 3 14100 7/1/14
+toyota 1 14000 5/2/7
+dire
+pizza 5 3252 0/6/2
+palec 4 7399 0/6/4
+fishscale 2 11877 5/3/4
+kebab 3 9365 1/7/6
+angry_duck 1 6961 1/7/1
+

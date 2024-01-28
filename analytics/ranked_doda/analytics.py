@@ -272,14 +272,15 @@ spark.sql("select * from res").show(100)
 
 
 def calc_fair_game(usernames: list[str], premade_teams: list[str]) -> dict[list[str]]:
+    team_size = len(usernames) // 2
     for user in usernames:
         if user not in player_id_by_username:
             print(f'unknown user {user}')
     results = {}
-    if len(usernames) != 10:
-        raise RuntimeError('need 10 players')
+    if len(usernames) % 2 != 0:
+        raise RuntimeError('need even number of players')
     players = set(player_id_by_username.get(name) or -1 for name in usernames)
-    for combination in itertools.combinations(players, 5):
+    for combination in itertools.combinations(players, team_size):
         team_1 = set(combination)
         team_2 = players - team_1
         allowed = True
@@ -302,13 +303,13 @@ def calc_fair_game(usernames: list[str], premade_teams: list[str]) -> dict[list[
     print('MOST FAIR:')
     def print_result(result):
         pprint({t:sorted([(int(player_ratings[player_id_by_username[p]]), p) for p in players], reverse=True) for t,players in result.items()})
-    for i in range(3):
+    for i in range(2):
         min_key = min(results)
         min_value = results.pop(min_key)
         print(min_key)
         print_result(min_value)
     print('MOST UNFAIR:')
-    for i in range(3):
+    for i in range(2):
         min_key = max(results)
         min_value = results.pop(min_key)
         print(min_key)
@@ -323,16 +324,16 @@ premade_teams = [
 # premade_teams = []
 
 fair_game = calc_fair_game([
-    'palec',
-    'katokan',
-    'solence',
-    'kebab',
     'pizza',
+    'cashier',
+    'fishscale',
     'imba',
-    'poopy',
+    'katokan',
+    'angry_duck',
+    'palec',
+    'kebab',
     'toyota',
-    'doyota',
-    'svetlana',
+    'ginecolog',
 ], premade_teams)
 # spark.sql("select * from user_result").repartition(1).write.csv('user_result.csv')
 # spark.sql("select * from user").repartition(1).write.csv('user.csv')
