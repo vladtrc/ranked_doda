@@ -162,6 +162,7 @@ from rating_history
 order by finished_at desc, is_winner
 """)
 
+spark.sql("select * from user_result").show(100000)
 spark.sql("select * from rating_history_human_readable").show(100000)
 
 view("rating", """

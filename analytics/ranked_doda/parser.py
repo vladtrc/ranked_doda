@@ -2,7 +2,7 @@ import datetime
 import logging
 from dataclasses import dataclass
 from typing import Iterator, Optional
-
+from itertools import takewhile
 from repository.in_memory_repository import table_schemas
 from spark_common import spark
 
@@ -28,19 +28,20 @@ class ParsedMatch:
     dire_players: list[ParsedPlayer]
 
 
-def split_by_14(inp: list[str]) -> Iterator[list[str]]:
-    partial_res = []
-    for e in inp:
-        e = e.strip()
-        if e:
-            partial_res += [e]
-            continue
+def split_by_14(inp: list[str]) -> list[list[str]]:
+    inp_copy = [line.strip() for line in inp]
+    results = []
+    while inp_copy:
+        spaces  = list(takewhile(lambda line: not line, inp_copy))
+        inp_copy = inp_copy[len(spaces):]
+        partial_res = list(takewhile(lambda line: line, inp_copy))
         if not partial_res:
-            continue
+            break
         if len(partial_res) != 14:
             raise RuntimeError('wrong input, not 14 : ' + '\n'.join(partial_res))
-        yield partial_res
-        partial_res = []
+        results += [partial_res]
+        inp_copy = inp_copy[len(partial_res):]
+    return results
 
 
 def parse_player(player_line: str) -> ParsedPlayer:
@@ -91,14 +92,13 @@ def unsafe_parse_14(ft: list[str]) -> ParsedMatch:
 
 
 def parse_file_to_matches(lines: list[str]) -> list[ParsedMatch]:
-    split_lines = split_by_14(lines)
+    split_lines = list(split_by_14(lines))
     parsed_matches = map(parse_14, split_lines)
     return [m for m in parsed_matches if m]
 
 
 def parse_file(lines: list[str]):
     parsed_matches = parse_file_to_matches(lines)
-
     matches = []
     users = []
     user_results = []
