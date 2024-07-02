@@ -5,6 +5,11 @@ Install:
 ```
 apt install pipx
 pipx install poetry
+
+cd analytics
+poetry install
+poetry shell 
+poetry run python ranked_doda/analytics.py
 ```
 
 
