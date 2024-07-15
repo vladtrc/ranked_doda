@@ -845,3 +845,34 @@ shu_bert 2 15595 10/2/11
 kebab 5 11759 1/5/23
 aizlkel 4 10248 4/4/8
 deniska 3 17529 6/1/15
+
+2024-07-15 21:00
+47:29 52-35 radiant
+radiant
+fishscale 4 15861 11/5/23
+wu3oud 3 27464 10/8/26
+starlight 2 26206 10/8/17
+dimka 5 15949 4/11/26
+deniska 1 34874 16/3/22
+dire
+imba 5 17766 11/8/11
+gantz 1 23937 4/9/12
+toyota 3 17766 7/11/16
+bnc 2 21595 9/9/9
+aizlkel 5 12523 4/15/15
+
+
+2024-07-15 22:00
+47:54 48-34 radiant
+radiant
+deniska 1 31494 11/5/14
+imba 3 22107 13/4/15
+bnc 2 31149 16/6/13
+toyota 4 18603 4/9/25
+aizlkel 5 13835 3/10/25
+dire
+gantz 1 23444 10/5/10
+starlight 2 16341 4/9/18
+katokan 4 15546 3/7/20
+wu3oud 3 22063 8/13/17
+pizza 5 15187 9/14/15
