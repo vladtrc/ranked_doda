@@ -324,18 +324,18 @@ premade_teams = [
 
 # premade_teams = []
 
-fair_game = calc_fair_game([
-    'pizza',
-    'cashier',
-    'fishscale',
-    'imba',
-    'katokan',
-    'angry_duck',
-    'palec',
-    'kebab',
-    'toyota',
-    'ginecolog',
-], premade_teams)
+# fair_game = calc_fair_game([
+#     'pizza',
+#     'cashier',
+#     'fishscale',
+#     'imba',
+#     'katokan',
+#     'angry_duck',
+#     'palec',
+#     'kebab',
+#     'toyota',
+#     'ginecolog',
+# ], premade_teams)
 # spark.sql("select * from user_result").repartition(1).write.csv('user_result.csv')
 # spark.sql("select * from user").repartition(1).write.csv('user.csv')
 # spark.sql("select * from match").repartition(1).write.csv('match.csv')

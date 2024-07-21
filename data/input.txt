@@ -876,3 +876,49 @@ starlight 2 16341 4/9/18
 katokan 4 15546 3/7/20
 wu3oud 3 22063 8/13/17
 pizza 5 15187 9/14/15
+
+2024-07-21 21:00
+28:03 15-38 dire
+radiant
+starlight 4 6071 3/13/6
+gantz 2 8783 3/7/4
+deniska 1 12947 2/3/1
+katokan 5 5552 1/9/8
+toyota 3 9370 5/7/9
+dire
+fishscale 4 9419 3/4/23
+yak 1 16366 8/2/19
+de 3 13043 10/4/14
+bnc 2 19294 15/0/7
+pizza 5 7897 1/5/16
+
+2024-07-21 22:00
+48:19 37-37 dire
+radiant
+deniska 1 24444 7/4/11
+fishscale 4 17228 5/6/20
+bnc 2 16949 10/8/5
+yak 3 19598 6/10/18
+toyota 3 16789 9/9/16
+dire
+gantz 3 36725 13/3/22
+de 5 15123 2/11/25
+starlight 2 33221 16/6/11
+katokan 3 17446 3/5/17
+pizza 4 16656 3/12/19
+
+
+2024-07-21 23:00
+27:43 38-18 radiant
+radiant
+yak 3 16239 7/5/16
+katokan 5 8230 0/5/18
+bnc 2 14940 5/0/15
+fishscale 4 11493 9/4/10
+deniska 1 20472 17/4/4
+dire
+wu3oud 3 10089 4/7/8
+starlight 2 10011 3/5/5
+pizza 4 6784 3/7/10
+gantz 1 11626 5/9/4
+de 5 5217 1/10/9
