@@ -1,7 +1,7 @@
 import itertools
 from collections import defaultdict
 from pprint import pprint
-
+from transpose import transpose
 from pyspark import Row
 from pyspark.sql.types import StructField, FloatType, StructType
 
@@ -33,6 +33,7 @@ select
     kill,
     death,
     assist,
+    pos,
     player_impact.player_id as player_id, 
     player_impact.net_worth as net_worth, 
     team_net_worth.is_radiant as is_radiant, 
@@ -45,6 +46,8 @@ from player_impact
      join match on team_net_worth.match_id = match.match_id
 """)
 
+view("player_impact_res", "select * from player_impact")
+     
 view("player_impact", """
 select 
     player_impact.player_id as player_id, 
@@ -162,8 +165,7 @@ from rating_history
 order by finished_at desc, is_winner
 """)
 
-spark.sql("select * from user_result").show(100000)
-spark.sql("select * from rating_history_human_readable").show(100000)
+
 
 view("rating", """
 select 
@@ -181,12 +183,7 @@ from rating
 where finished_at = max_finished_at and rating.player_id = rating_history.player_id
 group by rating.player_id
 """)
-# spark.sql("select * from rating").show(100)
 
-# exit(0)
-print('Всего игр: ' + str(spark.sql("select * from match").count()))
-
-print('Топ игроков по статам:')
 
 view("winrate", """
 select 
@@ -248,7 +245,7 @@ view("res_kills", "select player_id, cast(avg(kill) as int) as avg_kills from us
 view("res_assists", "select player_id, cast(avg(assist) as int) as avg_assists from user_result group by player_id")
 view("res_deaths", "select player_id, cast(avg(death) as int) as avg_death from user_result group by player_id")
 
-view("res", """
+view("players_leaderboard", """
 select 
     row_number() over (partition by 1 order by rating.player_rating desc) AS N,
     rating.player_rating as rating,
@@ -269,8 +266,72 @@ from user
 order by rating.player_rating desc
 """)
 
-spark.sql("select * from res").show(100)
 
+view("leaderboard_raw_player_impact", """
+    select 
+          player_impact_res.pos, 
+          player_impact_res.kill, 
+          player_impact_res.assist, 
+          player_impact_res.death, 
+          player_impact_res.net_worth as networth, 
+          player_impact_res.negative_impact as ruined, 
+          player_impact_res.impact as carried, 
+          date_format(match.finished_at, 'yyyy MM dd') as finished_at,
+          user.name
+    from player_impact_res
+        join user on user.user_id = player_impact_res.player_id
+        join user_result on user_result.match_id = player_impact_res.match_id
+        join match on player_impact_res.match_id = match.match_id
+""")
+
+view("leaderboard_pos_agg", """
+    select 
+        pos,
+        max(carried) as max_carried,
+        min(carried) as min_carried,
+        max(ruined) as max_ruined,
+        min(ruined) as min_ruined,
+        max(networth) as max_networth,
+        min(networth) as min_networth,
+        max(kill) as max_kill,
+        min(kill) as min_kill,
+        max(death) as max_death,
+        min(death) as min_death,
+        max(assist) as max_assist,
+        min(assist) as min_assist
+    from leaderboard_raw_player_impact  
+    group by pos
+""")
+
+view("leaderboard", """
+select distinct pos from leaderboard_pos_agg
+""")
+
+
+
+for parameter in ['kill', 'assist', 'death', 'networth']:
+    spark.sql(f"""
+    with res as (
+        select
+            board.*,
+            concat(raw_max_{parameter}.name, ' | ', max_{parameter}, ' | ',  raw_max_{parameter}.finished_at) as max_{parameter},
+            concat(raw_min_{parameter}.name, ' | ', min_{parameter}, ' | ',  raw_min_{parameter}.finished_at) as min_{parameter},
+        row_number() over (partition by
+            agg.pos
+            order by raw_max_{parameter}.finished_at desc, raw_min_{parameter}.finished_at desc) AS N
+        from leaderboard board
+        join leaderboard_pos_agg agg on agg.pos = board.pos
+        join leaderboard_raw_player_impact raw_max_{parameter} on raw_max_{parameter}.{parameter} = agg.max_{parameter} and raw_max_{parameter}.pos = board.pos
+        join leaderboard_raw_player_impact raw_min_{parameter} on raw_min_{parameter}.{parameter} = agg.min_{parameter} and raw_min_{parameter}.pos = board.pos
+    )
+    select * from res where N=1
+    """).drop('N').createOrReplaceTempView("leaderboard")
+
+
+spark.sql("select * from user_result").show(100)
+print('Топ игроков по статам:')
+spark.sql("select * from players_leaderboard").show(100, 100)
+spark.sql("select * from leaderboard").show(100, 100)
 
 def calc_fair_game(usernames: list[str], premade_teams: list[str]) -> dict[list[str]]:
     team_size = len(usernames) // 2
