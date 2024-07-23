@@ -266,58 +266,62 @@ from user
 order by rating.player_rating desc
 """)
 
+view("leaderboard_raw_player_streaks", """
+with prep as (
+    select cast(user_result.is_radiant = match.radiant_won as int) as is_winner, user_result.player_id, user_result.match_id, match.finished_at
+    from user_result
+    join match on user_result.match_id = match.match_id
+),
+lagged as (select lag(is_winner, 1) over (partition by player_id order by finished_at asc) as is_winner_prev, * from prep),
+streak_changed as (select case when is_winner_prev <> is_winner then 1 else 0 end as streak_changed, * from lagged),
+streak_id as (select sum(streak_changed) over (partition by player_id order by finished_at asc) as streak_id, * from streak_changed),
+streak_length as (select row_number() over (partition by player_id, streak_id order by finished_at asc) as streak_length, * from streak_id),
+streak_rank as (select rank() over (partition by player_id, streak_id order by streak_length desc) as streak_rank, * from streak_length)
+select * from streak_rank where streak_rank = 1
+""")
 
 view("leaderboard_raw_player_impact", """
     select 
-          player_impact_res.pos, 
-          player_impact_res.kill, 
-          player_impact_res.assist, 
-          player_impact_res.death, 
-          player_impact_res.net_worth as networth, 
-          int(impact.negative_impact_percentage * 100) as ruined, 
-          int(impact.impact_percentage * 100) as carried, 
-          date_format(match.finished_at, 'yyyy-MM-dd') as finished_at,
-          user.name
+        player_impact_res.pos, 
+        player_impact_res.kill, 
+        player_impact_res.assist, 
+        player_impact_res.death, 
+        player_impact_res.net_worth as networth, 
+        int(impact.negative_impact_percentage * 100) as ruined, 
+        int(impact.impact_percentage * 100) as carried, 
+        date_format(match.finished_at, 'yyyy-MM-dd') as finished_at,
+        losestreak.streak_length as losestreak,
+        winstreak.streak_length as winstreak,
+        user.name as name
     from player_impact_res
         join user on user.user_id = player_impact_res.player_id
         join user_result on user_result.match_id = player_impact_res.match_id
         join match on player_impact_res.match_id = match.match_id
         join player_impact impact on impact.match_id = player_impact_res.match_id and player_impact_res.player_id = impact.player_id
-""")
-
-view("leaderboard_pos_agg", """
-    select 
-        pos,
-        max(carried) as max_carried,
-        min(carried) as min_carried,
-        max(ruined) as max_ruined,
-        min(ruined) as min_ruined,
-        max(networth) as max_networth,
-        min(networth) as min_networth,
-        max(kill) as max_kill,
-        min(kill) as min_kill,
-        max(death) as max_death,
-        min(death) as min_death,
-        max(assist) as max_assist,
-        min(assist) as min_assist
-    from leaderboard_raw_player_impact  
-    group by pos
+        left join leaderboard_raw_player_streaks losestreak on losestreak.match_id = player_impact_res.match_id and player_impact_res.player_id = losestreak.player_id and losestreak.is_winner = 0
+        left join leaderboard_raw_player_streaks winstreak on winstreak.match_id = player_impact_res.match_id and player_impact_res.player_id = winstreak.player_id and winstreak.is_winner = 1
 """)
 
 view("leaderboard", """
-select distinct pos from leaderboard_pos_agg
+    select distinct pos from leaderboard_raw_player_impact
 """)
 
-for parameter in ['kill', 'assist', 'death', 'networth', 'ruined', 'carried']:
+for parameter in ['kill', 'assist', 'death', 'networth', 'ruined', 'carried', 'winstreak', 'losestreak']:
+    view("leaderboard_pos_agg", f"""
+        select 
+            pos,
+            max({parameter}) as max_{parameter},
+            min({parameter}) as min_{parameter}
+        from leaderboard_raw_player_impact  
+        group by pos
+    """)
     spark.sql(f"""
     with res as (
         select
             board.*,
             concat(raw_max_{parameter}.name, ' | ', max_{parameter}, ' | ',  raw_max_{parameter}.finished_at) as max_{parameter},
             concat(raw_min_{parameter}.name, ' | ', min_{parameter}, ' | ',  raw_min_{parameter}.finished_at) as min_{parameter},
-        row_number() over (partition by
-            agg.pos
-            order by raw_max_{parameter}.finished_at desc, raw_min_{parameter}.finished_at desc) AS N
+            row_number() over (partition by agg.pos order by raw_max_{parameter}.finished_at desc, raw_min_{parameter}.finished_at desc) AS N
         from leaderboard board
         join leaderboard_pos_agg agg on agg.pos = board.pos
         join leaderboard_raw_player_impact raw_max_{parameter} on raw_max_{parameter}.{parameter} = agg.max_{parameter} and raw_max_{parameter}.pos = board.pos
@@ -327,13 +331,20 @@ for parameter in ['kill', 'assist', 'death', 'networth', 'ruined', 'carried']:
     """).drop('N').createOrReplaceTempView("leaderboard")
 
 
-spark.sql("select * from user_result").show(100)
-print('Топ игроков по статам:')
-spark.sql("select * from players_leaderboard").show(100, 100)
 
-leaderboard_df = spark.sql("select * from leaderboard")
-leaderboard_df = spark.createDataFrame([leaderboard_df.schema.names], leaderboard_df.schema.names).union(leaderboard_df)
-spark.createDataFrame(leaderboard_df.toPandas().set_index('pos').T).show(100, 100)
+def show_leaderboard(leaderboard_df):
+    leaderboard_df = spark.createDataFrame([leaderboard_df.schema.names], leaderboard_df.schema.names).union(leaderboard_df)
+    spark.createDataFrame(leaderboard_df.toPandas().set_index('pos').T).show(100, 100)
+
+# spark.sql("select * from user_result").show(100)
+# print('Топ игроков по статам:')
+# spark.sql("select * from players_leaderboard").show(100, 100)
+ld_df = spark.sql("select * from leaderboard")
+print('Особо отличившиеся')
+show_leaderboard(ld_df.select('pos', 'max_winstreak', 'max_kill', 'max_assist', 'min_death', 'max_networth', 'max_carried', 'min_ruined'))
+print('Не особо отличившиеся...')
+show_leaderboard(ld_df.select('pos', 'max_losestreak', 'min_kill', 'min_assist', 'max_death', 'min_networth', 'min_carried', 'max_ruined'))
+
 
 def calc_fair_game(usernames: list[str], premade_teams: list[str]) -> dict[list[str]]:
     team_size = len(usernames) // 2
