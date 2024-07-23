@@ -290,8 +290,10 @@ view("leaderboard_raw_player_impact", """
         int(impact.negative_impact_percentage * 100) as ruined, 
         int(impact.impact_percentage * 100) as carried, 
         date_format(match.finished_at, 'yyyy-MM-dd') as finished_at,
+        case when impact.is_winner = 1 then 'W' else 'L' end as result,
         losestreak.streak_length as losestreak,
         winstreak.streak_length as winstreak,
+        int(player_rating_delta) as rating_diff,
         user.name as name
     from player_impact_res
         join user on user.user_id = player_impact_res.player_id
@@ -300,13 +302,15 @@ view("leaderboard_raw_player_impact", """
         join player_impact impact on impact.match_id = player_impact_res.match_id and player_impact_res.player_id = impact.player_id
         left join leaderboard_raw_player_streaks losestreak on losestreak.match_id = player_impact_res.match_id and player_impact_res.player_id = losestreak.player_id and losestreak.is_winner = 0
         left join leaderboard_raw_player_streaks winstreak on winstreak.match_id = player_impact_res.match_id and player_impact_res.player_id = winstreak.player_id and winstreak.is_winner = 1
+        left join rating_history on rating_history.match_id = player_impact_res.match_id and player_impact_res.player_id = rating_history.player_id
+    where year(match.finished_at) = year(now())
 """)
 
 view("leaderboard", """
     select distinct pos from leaderboard_raw_player_impact
 """)
 
-for parameter in ['kill', 'assist', 'death', 'networth', 'ruined', 'carried', 'winstreak', 'losestreak']:
+for parameter in ['kill', 'assist', 'death', 'networth', 'ruined', 'carried', 'winstreak', 'losestreak', 'rating_diff']:
     view("leaderboard_pos_agg", f"""
         select 
             pos,
@@ -319,8 +323,8 @@ for parameter in ['kill', 'assist', 'death', 'networth', 'ruined', 'carried', 'w
     with res as (
         select
             board.*,
-            concat(raw_max_{parameter}.name, ' | ', max_{parameter}, ' | ',  raw_max_{parameter}.finished_at) as max_{parameter},
-            concat(raw_min_{parameter}.name, ' | ', min_{parameter}, ' | ',  raw_min_{parameter}.finished_at) as min_{parameter},
+            concat(raw_max_{parameter}.name, ' | ', max_{parameter}, ' | ',  raw_max_{parameter}.result, ' | ',  raw_max_{parameter}.finished_at) as max_{parameter},
+            concat(raw_min_{parameter}.name, ' | ', min_{parameter}, ' | ',  raw_min_{parameter}.result, ' | ',  raw_min_{parameter}.finished_at) as min_{parameter},
             row_number() over (partition by agg.pos order by raw_max_{parameter}.finished_at desc, raw_min_{parameter}.finished_at desc) AS N
         from leaderboard board
         join leaderboard_pos_agg agg on agg.pos = board.pos
@@ -341,9 +345,9 @@ def show_leaderboard(leaderboard_df):
 # spark.sql("select * from players_leaderboard").show(100, 100)
 ld_df = spark.sql("select * from leaderboard")
 print('Особо отличившиеся')
-show_leaderboard(ld_df.select('pos', 'max_winstreak', 'max_kill', 'max_assist', 'min_death', 'max_networth', 'max_carried', 'min_ruined'))
+show_leaderboard(ld_df.select('pos', 'max_rating_diff', 'max_winstreak', 'max_kill', 'max_assist', 'min_death', 'max_networth', 'max_carried', 'min_ruined'))
 print('Не особо отличившиеся...')
-show_leaderboard(ld_df.select('pos', 'max_losestreak', 'min_kill', 'min_assist', 'max_death', 'min_networth', 'min_carried', 'max_ruined'))
+show_leaderboard(ld_df.select('pos', 'min_rating_diff', 'max_losestreak', 'min_kill', 'min_assist', 'max_death', 'min_networth', 'min_carried', 'max_ruined'))
 
 
 def calc_fair_game(usernames: list[str], premade_teams: list[str]) -> dict[list[str]]:
