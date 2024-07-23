@@ -274,14 +274,15 @@ view("leaderboard_raw_player_impact", """
           player_impact_res.assist, 
           player_impact_res.death, 
           player_impact_res.net_worth as networth, 
-          player_impact_res.negative_impact as ruined, 
-          player_impact_res.impact as carried, 
-          date_format(match.finished_at, 'yyyy MM dd') as finished_at,
+          int(impact.negative_impact_percentage * 100) as ruined, 
+          int(impact.impact_percentage * 100) as carried, 
+          date_format(match.finished_at, 'yyyy-MM-dd') as finished_at,
           user.name
     from player_impact_res
         join user on user.user_id = player_impact_res.player_id
         join user_result on user_result.match_id = player_impact_res.match_id
         join match on player_impact_res.match_id = match.match_id
+        join player_impact impact on impact.match_id = player_impact_res.match_id and player_impact_res.player_id = impact.player_id
 """)
 
 view("leaderboard_pos_agg", """
@@ -307,9 +308,7 @@ view("leaderboard", """
 select distinct pos from leaderboard_pos_agg
 """)
 
-
-
-for parameter in ['kill', 'assist', 'death', 'networth']:
+for parameter in ['kill', 'assist', 'death', 'networth', 'ruined', 'carried']:
     spark.sql(f"""
     with res as (
         select
@@ -331,7 +330,10 @@ for parameter in ['kill', 'assist', 'death', 'networth']:
 spark.sql("select * from user_result").show(100)
 print('Топ игроков по статам:')
 spark.sql("select * from players_leaderboard").show(100, 100)
-spark.sql("select * from leaderboard").show(100, 100)
+
+leaderboard_df = spark.sql("select * from leaderboard")
+leaderboard_df = spark.createDataFrame([leaderboard_df.schema.names], leaderboard_df.schema.names).union(leaderboard_df)
+spark.createDataFrame(leaderboard_df.toPandas().set_index('pos').T).show(100, 100)
 
 def calc_fair_game(usernames: list[str], premade_teams: list[str]) -> dict[list[str]]:
     team_size = len(usernames) // 2
