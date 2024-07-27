@@ -1,4 +1,1 @@
-cd analytics
-poetry shell
-cd ranked_doda
-python analytics.py
+cd analytics && poetry run python ranked_doda/analytics.py

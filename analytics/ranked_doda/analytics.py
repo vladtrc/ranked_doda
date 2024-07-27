@@ -8,7 +8,7 @@ from pyspark.sql.types import StructField, FloatType, StructType
 from parser import parse_file
 from spark_common import spark, view
 
-lines = open("../../data/input.txt").readlines()
+lines = open("../data/input.txt").readlines()
 parse_file(lines)
 
 view("player_impact",
@@ -340,9 +340,9 @@ def show_leaderboard(leaderboard_df):
     leaderboard_df = spark.createDataFrame([leaderboard_df.schema.names], leaderboard_df.schema.names).union(leaderboard_df)
     spark.createDataFrame(leaderboard_df.toPandas().set_index('pos').T).show(100, 100)
 
-# spark.sql("select * from user_result").show(100)
-# print('Топ игроков по статам:')
-# spark.sql("select * from players_leaderboard").show(100, 100)
+spark.sql("select * from rating_history_human_readable").show(100)
+print('Топ игроков по статам:')
+spark.sql("select * from players_leaderboard").show(100, 100)
 ld_df = spark.sql("select * from leaderboard")
 print('Особо отличившиеся')
 show_leaderboard(ld_df.select('pos', 'max_rating_diff', 'max_winstreak', 'max_kill', 'max_assist', 'min_death', 'max_networth', 'max_carried', 'min_ruined'))

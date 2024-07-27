@@ -11,7 +11,7 @@ def read_data(name):
     return (spark
             .read
             .options(header=True)
-            .csv(f"../../data/{name}.csv")
+            .csv(f"../data/{name}.csv")
             )
 
 
