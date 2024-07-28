@@ -1050,3 +1050,34 @@ dimka 3 11897 4/14/11
 zavod 5 8230 1/13/7
 wu3oud 2 12337 7/8/7
 deniska 1 17330 1/7/6
+
+
+2024-07-28 00:00
+40:04 44-14 radiant
+radiant
+starlight 1 24649 11/1/13
+shu_bert 2 25451 18/2/14
+toyota 3 18362 3/2/28
+wu3oud 4 18362 3/2/28
+abuser 5 14139 7/5/17
+dire
+katokan 2 13843 1/8/8
+de 5 7669 2/12/9
+imba 3 18824 3/5/8
+gantz 1 19543 8/4/4
+aizlkel 4 6472 0/16/9
+
+2024-07-28 01:00
+32:50 42-16 radiant
+radiant
+pizza 4 10066 1/4/20
+abuser 5 12027 7/5/27
+shu_bert 2 18153 4/3/22
+toyota 1 23020 12/4/14
+dimka 3 21150 17/0/12
+dire
+kebab 5 4100 1/6/5
+starlight 1 12949 1/9/1
+imba 3 1247 4/10/7
+wu3oud 2 12979 7/3/3
+aizlkel 4 7067 2/14/9
