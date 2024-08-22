@@ -8,11 +8,8 @@ spark = SparkSession \
 
 
 def read_data(name):
-    return (spark
-            .read
-            .options(header=True)
-            .csv(f"../data/{name}.csv")
-            )
+    spark.read.options(header=True).csv(f"../data/{name}.csv").createOrReplaceTempView(name)
+    return spark.sql(f"select * from {name}")
 
 
 def view(view_name: str, select: str):

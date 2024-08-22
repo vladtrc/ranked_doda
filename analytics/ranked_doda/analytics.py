@@ -4,9 +4,12 @@ from pprint import pprint
 from transpose import transpose
 from pyspark import Row
 from pyspark.sql.types import StructField, FloatType, StructType
+from pyspark.sql.functions import udf, col
 
 from parser import parse_file
 from spark_common import spark, view
+from estimate_deviation import estimate_deviation
+from spark_common import read_data
 
 lines = open("../data/input.txt").readlines()
 parse_file(lines)
@@ -28,26 +31,52 @@ from user_result
 group by match_id, is_radiant
 """)
 
+pos_perfomance_df = read_data("pos_perfomance")
+for column in pos_perfomance_df.schema.names:
+    pos_perfomance_df = pos_perfomance_df.withColumn(column, col(column).cast('integer'))
+pos_perfomance_df.createOrReplaceTempView("pos_perfomance")
+
 view("player_impact", """
 select 
+    case when player_impact.pos = 4 or player_impact.pos = 5 then 1 else 0 end as is_sup,
+    1 - is_sup as is_core,
+    case when death = 0 then 0.1 else death end as death_safe,
+    match.duration_sec/60 as duration_min,
+    (kill + assist/(1 + is_core)) as impact_base,
+    1/(death_safe/duration_min) as mpd,
+    estimate_deviation(mpd, bottom_mpd_perfomance, top_mpd_perfomance, 0.5f, 1.5f) as impact_death_affect,
+    -- max(0.5, min(, 1.5)) as impact_death_affect,
+    -- max(0.5, min(, 1.5)) as impact_networth_affect,
+    (kill + assist/(1 + is_core)) as impact_final,
     kill,
     death,
     assist,
-    pos,
+    player_impact.pos,
     player_impact.player_id as player_id, 
     player_impact.net_worth as net_worth, 
     team_net_worth.is_radiant as is_radiant, 
     team_net_worth.match_id as match_id, 
-    player_impact.net_worth/team_net_worth.team_net_worth as net_worth_percentage,
-    (kill + assist/2 + pos) / coalesce(NULLIF(power(death, 0.2),0), 1) as impact,
-     power(death, 1.2) / (coalesce(NULLIF((kill + assist/2 + pos),0), 1) * net_worth_percentage) as negative_impact
+    player_impact.net_worth / team_net_worth.team_net_worth as net_worth_percentage,
+    (kill + assist/(1 + is_core))   *   power(death_safe, -1/(is_sup + 1))         * (power(net_worth_percentage, 2) + 1)    as impact,
+    (1 - 1 / (kill + assist/(1 + is_core)))   *   power(death_safe, (is_core/2 + 0.75))     * (1 - power(net_worth_percentage, 2))   as negative_impact
 from player_impact 
      join team_net_worth on team_net_worth.match_id = player_impact.match_id and team_net_worth.is_radiant = player_impact.is_radiant
      join match on team_net_worth.match_id = match.match_id
+     left join pos_perfomance on pos_perfomance.pos = player_impact.pos
 """)
 
-view("player_impact_res", "select * from player_impact")
-     
+view("player_impact_res", "select * from player_impact order by match_id, is_radiant")
+
+
+# spark.sql(f"""
+# select 
+#     pos, 
+#     percentile_approx(value, 0.1) as bottom_value_perfomance,
+#     percentile_approx(value, 0.9) as top_value_perfomance
+# from player_impact_res group by pos order by pos
+# """)
+
+spark.sql("select * from player_impact_res limit 100").show()
 view("player_impact", """
 select 
     player_impact.player_id as player_id, 
@@ -80,6 +109,7 @@ select
      cast(user_result.is_radiant = match.radiant_won as int) as is_winner, 
      pr_skew.pr_skew,
      user_result.player_id,
+     user_result.pos as pos,
      user_result.is_radiant,
      match.match_id,
      array_agg((user_result.player_id, pos)) over (partition by match.match_id, is_radiant) as teammates,
@@ -153,7 +183,7 @@ select
     cast(pool as int) as pool,
     case when is_winner=1 then 'W' else 'L' end as r,
     username,
-    pos,
+    user_result.pos,
     net_worth,
     concat(kill, '/', death, '/', assist) as kda,
     concat(cast(negative_impact_percentage * 100 as int), '%') as ruined,
@@ -340,12 +370,16 @@ def show_leaderboard(leaderboard_df):
     leaderboard_df = spark.createDataFrame([leaderboard_df.schema.names], leaderboard_df.schema.names).union(leaderboard_df)
     spark.createDataFrame(leaderboard_df.toPandas().set_index('pos').T).show(100, 100)
 
+
+spark.sql("select pos, avg(player_rating_delta) as avg_diff from rating_history group by pos order by pos limit 100").show()
+spark.sql("select pos, avg(player_rating_delta) as avg_diff_gain from rating_history where player_rating_delta >= 0 group by pos order by pos limit 100").show()
+spark.sql("select pos, avg(player_rating_delta) as avg_diff_lose from rating_history where player_rating_delta < 0 group by pos order by pos limit 100").show()
 spark.sql("select * from rating_history_human_readable").show(100)
-print('Топ игроков по статам:')
+# print('Топ игроков по статам:')
 spark.sql("select * from players_leaderboard").show(100, 100)
-ld_df = spark.sql("select * from leaderboard")
-print('Особо отличившиеся')
-show_leaderboard(ld_df.select('pos', 'max_rating_diff', 'max_winstreak', 'max_kill', 'max_assist', 'min_death', 'max_networth', 'max_carried', 'min_ruined'))
-print('Не особо отличившиеся...')
-show_leaderboard(ld_df.select('pos', 'min_rating_diff', 'max_losestreak', 'min_kill', 'min_assist', 'max_death', 'min_networth', 'min_carried', 'max_ruined'))
+# print('Особо отличившиеся')
+# ld_df = spark.sql("select * from leaderboard")
+# show_leaderboard(ld_df.select('pos', 'max_rating_diff', 'max_winstreak', 'max_kill', 'max_assist', 'min_death', 'max_networth', 'max_carried', 'min_ruined'))
+# print('Не особо отличившиеся...')
+# show_leaderboard(ld_df.select('pos', 'min_rating_diff', 'max_losestreak', 'min_kill', 'min_assist', 'max_death', 'min_networth', 'min_carried', 'max_ruined'))
 
