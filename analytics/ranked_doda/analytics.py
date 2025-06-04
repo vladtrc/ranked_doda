@@ -266,7 +266,7 @@ from user
 order by rating.player_rating desc
 """)
 
-view("leaderboard_raw_player_streaks", """
+view("leaderboard_raw_player_streaks", """ 
 with prep as (
     select cast(user_result.is_radiant = match.radiant_won as int) as is_winner, user_result.player_id, user_result.match_id, match.finished_at
     from user_result
