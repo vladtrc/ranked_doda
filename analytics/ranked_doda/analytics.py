@@ -341,6 +341,14 @@ def show_leaderboard(leaderboard_df):
     spark.createDataFrame(leaderboard_df.toPandas().set_index('pos').T).show(100, 100)
 
 spark.sql("select * from rating_history_human_readable").show(100)
+
+spark.sql("select * from rating_history_human_readable").write \
+  .mode("overwrite") \
+  .option("delimiter", "\t") \
+  .option("header", "true") \
+  .csv("ou/rating_history_human_readable.tsv")
+
+
 print('Топ игроков по статам:')
 spark.sql("select * from players_leaderboard").show(100, 100)
 ld_df = spark.sql("select * from leaderboard")
